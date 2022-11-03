@@ -1,0 +1,298 @@
+---
+title: "RE07N6"
+date: "2022-10-08"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      smooth_scroll: no
+      code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message = FALSE,warning = FALSE)
+```
+
+
+Group number RE07N6
+
+Name: Yuqun Cao, Zongyuan Li, Yunze Peng, Jiayi Tang, Yuqin Zhang
+
+GitHub link https://github.sydney.edu.au/yzha6022/re07n6
+
+
+# Introduction
+
+By observing which variables have the greatest impact in predicting concrete strength,contractors, concrete suppliers, and even scientists among a multitude of other people canefficiently make longer lasting concrete. Concrete is a fundamental aspect of any city used inbasic foundations, buildings, roads, pavements, and more. Being used since the Romans,concrete is something that is ever improving. With the help of strength prediction models,models can contribute to many stakeholders involved in concrete production by accelerating production and use it to create high performance material before spending too much capital.
+
+
+## 1.1 Data Description
+
+This dataset was taken from kaggle but originally from UCI Machine Learning Repository:
+
+https://archive.ics.uci.edu/ml/datasets/Concrete+Compressive+Strength
+
+It has 1030 instances available with 9 quantitative data types in the data set. It provides 8 predictor variables that determine the strength of concrete include:
+
+
+- Cement (measured in kg/m^3): a binder, a substance used for construction that sets,hardens, and adheres to other materials to bind them together.  
+- Slag (measured in kg/m^3): the glass-like by-product left over after a desired metal has been separated from its raw ore and is considered as a binder along with fly ash.
+- Fly Ash (measured in kg/m^3): a byproduct from burning pulverized coal in electric power generating plants and is considered as a binder along with slag.
+- Water (measured in kg/m^3): is utilized to mix with cement for preparation.
+- Superplasticizer (measured in kg/m^3): ensures better flow properties since this minimizes particle segregation allowing to decrease water-cement ratio which contributes to the increase of compressive strength.
+- Coarse Aggregate (measured in kg/m^3): are any particles greater than 0.19 inch, but generally range between 3/8 and 1.5 inches in diameter. 
+- Fine Aggregate (measured in kg/m^3): generally consist of natural sand or crushed stone with most particles passing through a 3/8-inch sieve.
+- Age (measured in days): the age of the cement; concrete hardens with time in which increases strength.With the Concrete Compressive Strength being the Response Variable:
+- csMPa (measured in MPa): Concrete Compressive Strength
+
+
+With the Concrete Compressive Strength being the Response Variable:
+- csMPa (measured in MPa): Concrete Compressive Strength
+
+
+```{r}
+library(readxl)
+conc <- read_excel("Concrete_Data.xlsx")
+names(conc) <- c("cement","slag","flyash","water",
+                 "superplasticizer","coarseaggregate",
+                 "fineaggregate","age"	,"csMPa")
+head(conc)
+```
+
+
+
+## 1.2 Initial data analysis(IDA)
+
+### 1.2.1Scatterplot
+
+```{r}
+library(gridExtra)
+
+s1 <- ggplot(conc, aes(x=cement, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s2 <- ggplot(conc, aes(x=slag, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s3 <- ggplot(conc, aes(x=flyash, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s4 <- ggplot(conc, aes(x=water, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s5 <- ggplot(conc, aes(x=superplasticizer, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s6 <- ggplot(conc, aes(x=coarseaggregate, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s7 <- ggplot(conc, aes(x=fineaggregate, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+s8 <- ggplot(conc, aes(x=age, y=csMPa)) + 
+  geom_point(shape=18, color="#4D66E1")+
+  geom_smooth(method=lm,  linetype="dashed",
+             color="darkred", fill="#E96CEA")
+
+grid.arrange(s1, s2, s3, s4, s5, s6, s7, s8, nrow = 4)
+```
+
+With the scatterplot, we can observe the different linear relations with the 8 predictor variables and the response variable. There are positive linear relations for Cement, Slag Superplasticizer and Age. However, there are negative linear relations for Water, Fly Ash, Fine Aggregate and
+Coarse Aggregate.
+
+### 1.2.2 Pearson Correlation Heat Map
+
+```{r}
+library(ggcorrplot)
+conc %>%
+  cor() %>%
+  round(2) %>%
+  ggcorrplot(hc.order = TRUE,lab = TRUE)
+```
+
+
+With the Pearson Correlation Heat Map, we can observe that there is a positive correlation between Compressive Strength (csMPA) and Cement which is valid because the increasing amount of cement in preparing concrete leads to stronger concrete. Other positive correlations in accordance with the Compressive Strength (csMPA) include: Super Plasticizer, Fly Ash and Age.These correlations aid with understanding how the predictor variables affect the response variable. However, there is a negative correlation presented with water.
+
+
+```{r}
+library(car) 
+scatterplotMatrix(conc, spread=FALSE, smoother.args=list(lty=2), main="Scatter Plot Matrix")
+```
+
+
+# Data Analysis
+## 1.1 Five Models
+### 1.1.1 Full Model (linear-linear)
+
+Now that the basic understanding of the dataset is known, the next task to tackle was building the
+full fit linear model. This would allow us to have a greater insight of our variables and see which
+ones contribute to the response variable using a statistical test. 
+
+```{r}
+#full model
+lm1 <- lm(csMPa~., data = conc)
+
+#summary with parameter coefficients and other metrics
+summary(lm1)
+```
+
+```{r}
+#variance
+print(paste("Variance: ", sigma(lm1)^2))
+
+#99% confidence interval 
+print("99% Confidence Interval: ")
+confint(lm1,level=0.99)
+```
+
+
+
+From the table above, it is clear that when considering a significance level of 0.001,
+superplasticizer, coarseaggregate, and fineaggregate are not seen as significant. This will be
+important later when the reduced model is explored, but for now, we focus only on the full fit
+linear model.
+
+Using the model, we take a look at R student, Standardized, and Studentized Residual graphs.
+Here, we can see that all of the points fall within the boundaries(+-3) except for 225. This point
+gets close, or sometimes beyond the line on multiple occasions. It is important to note this, as it
+is clearly an outlier and will likely show up again in future analytical graphs.
+
+
+### 1.1.2 Build Reduced Model (linear-linear)
+
+Selecting variables for the reduced model was somewhat difficult as most of the time, specific variables are removed as they are not very significant and the model is generally expected to improve; in our case, all of the variables were quite useful in that they were all reasonably correlated and had something to offer in predicting concrete compressive strength. Below, you can observe that forward, backward, and stepwise selection actually ended up recommending the original full model
+
+
+In stepwise regression, the model will add or delete one variable at a time until a stop criterion is reached. For example, forward stepwise regression adds one prediction variable to the model each time until adding variables will not improve the model. Backward stepwise regression starts with the model containing all forecast variables and deletes one variable at a time until the model quality will be reduced.
+
+```{r}
+library(MASS) 
+lm2 = stepAIC(lm1, direction="backward",trace  = 0)
+#summary with parameter coefficients and other metrics
+summary(lm2)
+```
+
+We see that the adjusted R2 value decreased 0.6125 . This very minimal difference indicates that the variables superplasticizer, coarse aggregate, and fine aggregate did not offer much to the full model and the R2 was only barely higher than because of the greater number of variables.
+
+
+
+### 1.1.3 Log-Linear Model
+```{r}
+conc=  conc %>%
+mutate(loconc_cement = log(cement))
+lm01 = lm(loconc_cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+csMPa,conc)
+summary(lm01)
+```
+
+### 1.1.4 Linear-log Model
+```{r}
+conc = conc %>%
+  mutate(lomp = log(csMPa))
+lm02 = lm(cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+lomp, conc)
+summary(lm02)
+```
+
+
+### 1.1.5 log-log Model
+```{r}
+conc = conc %>%
+  mutate(lomp = log(csMPa))
+lm03 = lm(loconc_cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+lomp, conc)
+summary(lm03)
+```
+
+
+
+
+
+## 2.1 Model Comparison
+```{r}
+library(caret)
+cv_full1 = train(cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+csMPa,conc, method = "lm",
+trcontrol = trainControl(method="cv", number=10, verboseIter =FALSE))
+cv_full1
+```
+
+```{r}
+library(caret)
+cv_full2 = train(loconc_cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+csMPa,conc, method = "lm",
+trcontrol = trainControl(method="cv", number=10, verboseIter =FALSE))
+cv_full2
+```
+
+```{r}
+library(caret)
+cv_full3 = train(loconc_cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+lomp,conc, method = "lm",
+trcontrol = trainControl(method="cv", number=10, verboseIter =FALSE))
+cv_full3
+```
+
+By comparing these five models. We find that log-log model has the largest Rsquared.And its RMSE and MAE are also the smallest. So the log-log model is the most appropriate.
+
+## 2.2 Assumption Check
+
+```{r}
+library(ggfortify)
+autoplot(lm02, which=1:2)+ theme_bw()
+```
+Linearity: The residual vs fitted values figure shows no discernible pattern, thus it doesn't seem like we misspecified the model.
+Independence: Nothing about the observations is connected.
+Homoskedasticity: By observation of residuals vs fitted plot, the spread looks reasonably over the csMPa values except some outlier.
+Normality: The plot we create displays a nearly straight line, which suggests that the normalcy assumption is true even when there are some outliers, such the number 582,583,584.
+
+
+
+### 2.2.1 interpretation
+
+
+lomp =  2299.85042 - 1.03056slag - 1.24417flyash - 2.75930water - 0.43169superplasticizer - 0.76621coarseaggregate - 0.95492fineaggregate - 0.16657age
+```{r}
+conc = conc %>%
+  mutate(lomp = log(csMPa))
+lm02 = lm(cement~cement +slag+flyash+water+superplasticizer+coarseaggregate+fineaggregate+age+lomp, conc)
+summary(lm02)
+```
+
+
+
+
+# 3 Conclusion
+
+To summarize our findings: cement, slag, fly ash, water, and age are the most significant predictors in modeling concrete compressive strength and concrete compressive strength is calculated as a nonlinear function of its components. What this means for the future is that concrete mixers/manufacturers should give more weight to or focus on the cement, slag, fly ash, water, and age ingredients in their mixture. This type of research is significant for the foundations (pun intended) of civil
+engineering, architecture, and infrastructure as a whole. Stronger concrete means structures that endure the test of time as well as natural disasters or any other complication. 
+
+
+For future study, perhaps more aspects of concrete mixture such as sub-qualities of air, cement, water, aggregates, and other minerals could be analyzed. Other transformations should also be explored to perhaps create an even more valuable distribution of the data or other types of regression models could be utilized to improve the predictive power.
+
+Reflecting on our project journey, we actually learned much from our experience. First, organizing meetings, assigning roles, and working together as a team has improved all members' communication and efficiency in a group. Outside these logistical aspects, researching the data helped us learn much about concrete such as the many ingredients that it consists of, in what units these are measured, and how extensive the use of concrete is in our modern world. 
+
+
+We were successful in many aspects but did have some difficulty with some parts, such as variable selection. Having many useful variables is great but we learned that studying the loss of certain variables allows us to understand the strength of the others in full models; a reduced model should not always be an improvement but is a chance to evaluate specific variables. 
+
+
+
+
+
+
+
+
